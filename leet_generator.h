@@ -6,6 +6,8 @@
 #include <string.h>
 #include <ctype.h>
 #include <time.h>
+#include <wchar.h>
+#include <locale.h>
 
 #ifdef _WIN32
     #ifdef LEET_EXPORTS
@@ -24,21 +26,65 @@ typedef struct LeetRule {
     int maxReplacementLength;
 } LeetRule;
 
+typedef struct LeetReverseMap {
+    wchar_t* pattern;
+    char original;
+    int patternLength;
+    struct LeetReverseMap* next;
+} LeetReverseMap;
+
 typedef struct LeetGenerator {
     LeetRule* rules;
     int ruleCount;
-    int useMultiChar;  // флаг для использования многобуквенных замен
-    int preserveCase;  // сохранять ли оригинальный регистр
+    LeetReverseMap** reverseMap;
+    int useMultiChar;
+    int preserveCase;
+    int cacheSize;
+    char** wordCache;
+    int* cacheLengths;
+    int cacheCount;
+    int replacementChance;
+    int caseChangeChance;
+    int useSeed;
+    unsigned int seed;
 } LeetGenerator;
+
+typedef struct LeetDecryptResult {
+    char* text;
+    int confidence;
+    int timeMs;
+    int unknownWords;           // количество неизвестных слов
+} LeetDecryptResult;
+
+typedef struct LeetEncryptedMessage {
+    wchar_t** words;
+    int wordCount;
+    int originalLength;
+    char* metadata;
+} LeetEncryptedMessage;
 
 LEET_API LeetGenerator* leet_create_generator(void);
 LEET_API void leet_destroy_generator(LeetGenerator* generator);
+LEET_API void leet_set_replacement_chance(LeetGenerator* generator, int chance);
+LEET_API void leet_set_case_chance(LeetGenerator* generator, int chance);
+LEET_API void leet_set_seed(LeetGenerator* generator, unsigned int seed);
+LEET_API void leet_randomize_seed(LeetGenerator* generator);
 LEET_API void leet_set_use_multichar(LeetGenerator* generator, int use);
 LEET_API void leet_set_preserve_case(LeetGenerator* generator, int preserve);
-LEET_API char* leet_generate(LeetGenerator* generator, const char* word);
-LEET_API char** leet_generate_multiple(LeetGenerator* generator, const char* word, int count);
-LEET_API void leet_free_result(char* result);
-LEET_API void leet_free_multiple_results(char** results, int count);
-LEET_API int leet_load_rules(LeetGenerator* generator, const char* filename);
+LEET_API void leet_set_cache_size(LeetGenerator* generator, int maxKB);
+LEET_API wchar_t* leet_encrypt_word(LeetGenerator* generator, const char* word);
+LEET_API LeetEncryptedMessage* leet_encrypt_message(LeetGenerator* generator, const char* message);
+LEET_API void leet_free_encrypted_message(LeetEncryptedMessage* msg);
+LEET_API char* leet_decrypt_word(LeetGenerator* generator, const wchar_t* leetWord);
+LEET_API LeetDecryptResult* leet_decrypt_message(LeetGenerator* generator, LeetEncryptedMessage* msg);
+LEET_API LeetDecryptResult* leet_decrypt_words(LeetGenerator* generator, wchar_t** words, int wordCount);
+LEET_API void leet_free_decrypt_result(LeetDecryptResult* result);
+LEET_API void leet_cache_word(LeetGenerator* generator, const char* word, const wchar_t* encrypted);
+LEET_API wchar_t* leet_lookup_cache(LeetGenerator* generator, const char* word);
+LEET_API void leet_clear_cache(LeetGenerator* generator);
+LEET_API void leet_print_hex(const char* data, int length);
+LEET_API char* leet_unicode_to_utf8(const wchar_t* unicode);
+LEET_API void leet_print_stats(LeetGenerator* generator);
+LEET_API void leet_print_reverse_map(LeetGenerator* generator);
 
 #endif // LEET_GENERATOR_H
