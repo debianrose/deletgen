@@ -1,3 +1,4 @@
+#define LEET_EXPORTS
 #include "leet_generator.h"
 
 static LeetErrorCode g_last_error      = LEET_OK;

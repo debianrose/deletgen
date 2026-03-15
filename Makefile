@@ -1,5 +1,5 @@
 CC = gcc
-CFLAGS = -Wall -Wextra -O2 -fPIC
+CFLAGS = -Wall -Wextra -O2 -fPIC -DLEET_EXPORTS
 LDFLAGS = -shared
 
 all: libleetgen.so libleetgen.a

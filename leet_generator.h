@@ -10,15 +10,7 @@
 #include <locale.h>
 #include <stdint.h>
 
-#ifdef _WIN32
-    #ifdef LEET_EXPORTS
-        #define LEET_API __declspec(dllexport)
-    #else
-        #define LEET_API __declspec(dllimport)
-    #endif
-#else
-    #define LEET_API
-#endif
+#define LEET_API
 
 typedef enum {
     LEET_OK           = 0,
